@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { createCellData, type ICellData, type IDataFrame, isICellData } from '../types/interfaces';
 import type { IRange } from '../types/interfaces/i-range';
 import { Tools } from './tools';
 import type { Nullable } from './types';
@@ -221,8 +222,34 @@ function _moveForward<T>(
 export class ObjectMatrix<T> {
     private _matrix!: IObjectMatrixPrimitiveType<T>;
 
-    constructor(matrix: IObjectMatrixPrimitiveType<T> = {}) {
-        this._setOriginValue(matrix);
+    private _df: IDataFrame;
+
+    constructor(matrix: IObjectMatrixPrimitiveType<T> = {}, df?: IDataFrame) {
+        if (df !== undefined) {
+            this.setDataFrame(df);
+        } else {
+            this._setOriginValue(matrix);
+        }
+    }
+
+    setDataFrame(df: IDataFrame) {
+        this._df = df;
+        this._setOriginValue(this.dataFrameToMatrix(this._df));
+    }
+
+    // 将 DataFrame 转换为 IObjectMatrixPrimitiveType<ICellData>
+    dataFrameToMatrix<T>(idf: IDataFrame): IObjectMatrixPrimitiveType<T> {
+        const matrix: IObjectMatrixPrimitiveType<T> = {};
+        for (let i = 0; i < idf.shape[0]; i++) {
+            const row: IObjectArrayPrimitiveType<T> = {};
+            for (let j = 0; j < idf.shape[1]; j++) {
+                const value = idf.iat(i, j);
+                row[j] = createCellData({ v: value, df: idf, r: i, c: j }) as T;
+            }
+            matrix[i] = row;
+        }
+
+        return matrix;
     }
 
     static MakeObjectMatrixSize<T>(size: number): ObjectMatrix<T> {
@@ -346,9 +373,47 @@ export class ObjectMatrix<T> {
         return this._matrix?.[row]?.[column];
     }
 
+    //todo optimize this, when mouse move on the sheet, it will trigger this function in high frequency
+    //eg: getFontCreateConfig;
     setValue(row: number, column: number, value: T): void {
         const objectArray = this.getRowOrCreate(row);
-        objectArray[column] = value;
+        if (isICellData(value)) {
+            const cell = objectArray[column] as ICellData;
+            if (cell === undefined) {
+                (objectArray[column] as ICellData) = createCellData(value);
+            } else {
+                if (value.v !== undefined) {
+                    cell.v = value.v;
+                }
+                if (value.p !== undefined) {
+                    cell.p = value.p;
+                }
+                if (value.t !== undefined) {
+                    cell.t = value.t;
+                }
+                if (value.f !== undefined) {
+                    cell.f = value.f;
+                }
+                if (value.si !== undefined) {
+                    cell.si = value.si;
+                }
+                if (value.s !== undefined) {
+                    cell.s = value.s;
+                }
+            }
+            //        ((value as ICellData).s !== undefined ||
+            // if (cell) {
+            //     Object.keys(value).forEach((key) => {
+            //         const prop = key as keyof ICellData;
+            //         if (prop in ICellData') {
+            //             (cell[prop] as any) = value[prop];
+            //         }
+            //
+            //     });
+            // }
+        } else {
+            objectArray[column] = value;
+        }
     }
 
     /**

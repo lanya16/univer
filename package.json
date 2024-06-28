@@ -44,6 +44,10 @@
         "release:beta": "release-it preminor --preRelease=beta",
         "release:rc": "release-it prerelease --preRelease=rc"
     },
+    "dependencies": {
+        "danfojs": "^1.1.2",
+        "univer": "link:"
+    },
     "devDependencies": {
         "@antfu/eslint-config": "^2.20.0",
         "@commitlint/cli": "^19.3.0",

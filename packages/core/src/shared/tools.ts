@@ -16,6 +16,7 @@
 
 import { customAlphabet, nanoid } from 'nanoid';
 
+import { createCellData, isICellData } from '../types/interfaces';
 import type { Class, IKeyValue } from './types';
 
 const rmsPrefix = /^-ms-/;
@@ -325,8 +326,12 @@ export class Tools {
                 clone[key] = Tools.deepClone(item);
             });
             Object.setPrototypeOf(clone, Object.getPrototypeOf(value));
+            if (isICellData(value)) {
+                return createCellData(clone) as T;
+            }
             return clone as T;
         }
+
         return value;
     }
 
@@ -695,3 +700,7 @@ export class Tools {
         }
     }
 }
+function isCellData<T extends {}>(value: T) {
+    throw new Error('Function not implemented.');
+}
+

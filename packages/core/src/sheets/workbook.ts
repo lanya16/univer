@@ -16,6 +16,7 @@
 
 import type { Observable } from 'rxjs';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { readCSV } from 'danfojs';
 
 import { ILogService } from '../services/log/log.service';
 import type { Nullable } from '../shared';
@@ -24,6 +25,7 @@ import { DEFAULT_RANGE_ARRAY } from '../types/const';
 import { BooleanNumber } from '../types/enum';
 import type {
     IColumnStartEndData,
+    IDataFrame,
     IGridRange,
     IRangeArrayData,
     IRangeStringData,
@@ -32,6 +34,7 @@ import type {
     IWorkbookData,
     IWorksheetData,
 } from '../types/interfaces';
+
 import { UnitModel, UniverInstanceType } from '../common/unit';
 import { Styles } from './styles';
 import { Worksheet } from './worksheet';
@@ -63,6 +66,8 @@ export class Workbook extends UnitModel<IWorkbookData, UniverInstanceType.UNIVER
      */
     private _worksheets: Map<string, Worksheet>;
 
+    private _dfs: Map<string, IDataFrame>;
+
     /**
      * Common style
      * @private
@@ -92,7 +97,7 @@ export class Workbook extends UnitModel<IWorkbookData, UniverInstanceType.UNIVER
         @ILogService private readonly _logService: ILogService
     ) {
         super();
-
+        this._dfs = new Map<string, IDataFrame>();
         const DEFAULT_WORKBOOK = getEmptySnapshot();
         if (Tools.isEmptyObject(workbookData)) {
             this._snapshot = DEFAULT_WORKBOOK;
@@ -178,11 +183,25 @@ export class Workbook extends UnitModel<IWorkbookData, UniverInstanceType.UNIVER
 
         sheets[id] = worksheetSnapshot;
         sheetOrder.splice(index, 0, id);
+        // if (df !== undefined) {
+        //     dfs[id] = df;
+        //     this._dfs.set(id, df);
+        // }
         const worksheet = new Worksheet(this._unitId, worksheetSnapshot, this._styles);
+
         this._worksheets.set(id, worksheet);
+
         this._sheetCreated$.next(worksheet);
 
         return true;
+    }
+
+    bindingDataFrame(id: string, df: IDataFrame) {
+        return this._dfs.set(id, df);
+    }
+
+    unbindDataFrame(id: string): boolean {
+        return this._dfs.delete(id);
     }
 
     getSheetOrders(): Readonly<string[]> {

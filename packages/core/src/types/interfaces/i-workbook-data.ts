@@ -16,6 +16,7 @@
 
 import type { IKeyType, Nullable } from '../../shared/types';
 import type { LocaleType } from '../enum';
+import type { IDataFrame, IDataFramePosMapping } from './i-data-frame';
 import type { IExtraModelData } from './i-extra-model-data';
 import type { IStyleData } from './i-style-data';
 import type { IWorksheetData } from './i-worksheet-data';
@@ -54,4 +55,9 @@ export interface IWorkbookData extends IExtraModelData {
 
     // The type of data depends on how the plug-in is defined
     resources?: Array<{ id?: string; name: string; data: string }>;
+
+    //dfs: { [dfId: string]: IDataFrame };
+    df: IDataFrame;
+
+    posmapping: IDataFramePosMapping;
 }

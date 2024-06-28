@@ -20,6 +20,7 @@ import type { ICellCustomRender } from './i-cell-custom-render';
 import type { IDocumentData } from './i-document-data';
 import type { IStyleData } from './i-style-data';
 import type { ICellValidationData } from './i-cell-validation-data';
+import type { IDataFrame } from './i-data-frame';
 
 /**
  * Cell value type
@@ -42,6 +43,7 @@ export interface ICellData {
     /**
      * Origin value
      */
+    //v?: Nullable<CellValue>;
     v?: Nullable<CellValue>;
 
     // Usually the type is automatically determined based on the data, or the user directly specifies
@@ -61,6 +63,14 @@ export interface ICellData {
      * User stored custom fields
      */
     custom?: Nullable<Record<string, any>>;
+
+    //dataframe
+    r?: Nullable<number>;
+
+    c?: Nullable<number>;
+
+    df?: Nullable<IDataFrame>;
+
 }
 
 export interface ICellMarksStyle {
@@ -140,4 +150,22 @@ export function isNullCell(cell: Nullable<ICellData>) {
 
 export function isCellV(cell: Nullable<ICellData | CellValue>) {
     return cell != null && (typeof cell === 'string' || typeof cell === 'number' || typeof cell === 'boolean');
+}
+
+export function createCellData(data: ICellData): ICellData {
+    return new Proxy(data, {
+        get(target, prop) {
+            if (prop === 'v' && target.df != null && target.r != null && target.c != null) {
+                return target.df.iat(target.r, target.c);
+            }
+            return target[prop as keyof ICellData];
+        },
+        set(target, prop, value) {
+            if (prop === 'v' && target.df != null && target.r != null && target.c != null) {
+                return target.df.setcellvalue(target.r, target.c, value);
+            }
+            target[prop as keyof ICellData] = value;
+            return true;
+        },
+    });
 }

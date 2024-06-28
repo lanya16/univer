@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+import { readCSV } from 'danfojs';
 import type { Nullable } from '../shared';
 import { ObjectMatrix, Rectangle, Tools } from '../shared';
 import { createRowColIter } from '../shared/row-col-iter';
 import { type BooleanNumber, CellValueType } from '../types/enum';
 import type { ICellData, ICellDataForSheetInterceptor, IFreeze, IRange, IWorksheetData } from '../types/interfaces';
+import type { IDataFrame } from '../types/interfaces/i-data-frame';
 import { ColumnManager } from './column-manager';
 import { Range } from './range';
 import { RowManager } from './row-manager';
@@ -33,6 +35,8 @@ export class Worksheet {
     protected _sheetId: string;
     protected _snapshot: IWorksheetData;
     protected _cellData: ObjectMatrix<ICellData>;
+    private _dfs: Map<string, IDataFrame>;
+    private _df: IDataFrame;
 
     protected _rowManager: RowManager;
     protected _columnManager: ColumnManager;
@@ -47,13 +51,41 @@ export class Worksheet {
         this._snapshot = mergeWorksheetSnapshotWithDefault(snapshot);
 
         const { columnData, rowData, cellData } = this._snapshot;
+
         this._sheetId = this._snapshot.id ?? Tools.generateRandomId(6);
         this._cellData = new ObjectMatrix<ICellData>(cellData);
+
+        this._readCSVWithCallback('https://raw.githubusercontent.com/curran/data/gh-pages/jsLibraries/jsLibs.csv',
+            'options', (df: IDataFrame) => {
+                this._setDataFrame(df);
+            });
 
         // This view model will immediately injected with hooks from SheetViewModel service as Worksheet is constructed.
         this._viewModel = new SheetViewModel((row, col) => this.getCellRaw(row, col));
         this._rowManager = new RowManager(this._snapshot, this._viewModel, rowData);
         this._columnManager = new ColumnManager(this._snapshot, columnData);
+        this._dfs = new Map<string, IDataFrame>();
+        if (this._df !== undefined) {
+            this._dfs.set(unitId, this._df);
+        }
+    }
+
+    private _readCSVWithCallback(
+        file: any,
+        options: string | undefined,
+        callback: (dataFrame: IDataFrame) => void
+    ) {
+        readCSV(file)
+            .then((df) => {
+                this._cellData.setDataFrame(df);
+            })
+            .catch((error) => {
+                console.error('Failed to read CSV file:', error);
+            });
+    }
+
+    private _setDataFrame(df: IDataFrame) {
+        this._cellData.setDataFrame(df);
     }
 
     /**
