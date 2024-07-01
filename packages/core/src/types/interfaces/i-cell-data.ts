@@ -27,10 +27,37 @@ import type { IDataFrame } from './i-data-frame';
  */
 export type CellValue = string | number | boolean;
 
+// 避免使用 "use strict";
+function proxyDecorator(target: any, propertyKey: string) {
+    let value = target[propertyKey];
+    const getter = () => {
+        if (target.df != null && target.r != null && target.c != null) {
+            return target.df.iat(target.r, target.c);
+        }
+        return value;
+    };
+
+    const setter = (newValue: any) => {
+        if (target.df != null && target.r != null && target.c != null) {
+            return target.df.setcellvalue(target.r, target.c, newValue);
+        }
+        value = newValue;
+    };
+
+    Object.defineProperty(target, propertyKey, {
+        get: getter,
+        set: setter,
+        enumerable: true,
+        configurable: true,
+    });
+
+    return Object.getOwnPropertyDescriptor(target, propertyKey);
+}
+
 /**
  * Cell data
  */
-export interface ICellData {
+export class ICellData {
     /**
      * The unique key, a random string, is used for the plug-in to associate the cell. When the cell information changes,
      * the plug-in does not need to change the data, reducing the pressure on the back-end interface id?: string.
@@ -44,7 +71,8 @@ export interface ICellData {
      * Origin value
      */
     //v?: Nullable<CellValue>;
-    v?: Nullable<CellValue>;
+    @proxyDecorator
+        v?: Nullable<CellValue>;
 
     // Usually the type is automatically determined based on the data, or the user directly specifies
     t?: Nullable<CellValueType>; // 1 string, 2 number, 3 boolean, 4 force string, green icon, set null for cell clear all
@@ -71,6 +99,13 @@ export interface ICellData {
 
     df?: Nullable<IDataFrame>;
 
+    constructor(data: Partial<ICellData>) {
+        for (const key in data) {
+            if (data[key as keyof ICellData] !== undefined) {
+                (this as any)[key] = data[key as keyof ICellData];
+            }
+        }
+    }
 }
 
 export interface ICellMarksStyle {

@@ -77,7 +77,7 @@ export class Worksheet {
     ) {
         readCSV(file)
             .then((df) => {
-                this._cellData.setDataFrame(df);
+                callback(df);
             })
             .catch((error) => {
                 console.error('Failed to read CSV file:', error);

@@ -199,6 +199,16 @@ export class Tools {
         }
 
         function deepObject(object: any, to: any) {
+            // Object.getOwnPropertyNames(object).forEach(key => {
+            //     const descriptor = Object.getOwnPropertyDescriptor(object, key);
+            //     if (descriptor) {
+            //       if (typeof descriptor.value === 'object' && descriptor.value !== null) {
+            //         descriptor.value = Tools.deepClone(descriptor.value);
+            //       }
+            //       Object.defineProperty(to, key, descriptor);
+            //     }
+            // });
+
             Object.keys(object).forEach((key) => {
                 const value = object[key];
                 if (Tools.isObject(value)) {
@@ -320,15 +330,25 @@ export class Tools {
             return clone as T;
         }
         if (this.isObject(value)) {
-            const clone: IKeyValue = {};
-            Object.keys(value as IKeyValue).forEach((key) => {
-                const item = (value as IKeyValue)[key];
-                clone[key] = Tools.deepClone(item);
+            // const clone: IKeyValue = {};
+            // // Object.keys(value as IKeyValue).forEach((key) => {
+            // //     const item = (value as IKeyValue)[key];
+            // //     clone[key] = Tools.deepClone(item);
+            // // });
+            // // Object.setPrototypeOf(clone, Object.getPrototypeOf(value));
+            // // return clone as T;
+
+            const clone = Object.create(Object.getPrototypeOf(value));
+
+            Object.getOwnPropertyNames(value).forEach((key) => {
+                const descriptor = Object.getOwnPropertyDescriptor(value, key);
+                if (descriptor) {
+                    if (typeof descriptor.value === 'object' && descriptor.value !== null) {
+                        descriptor.value = Tools.deepClone(descriptor.value);
+                    }
+                    Object.defineProperty(clone, key, descriptor);
+                }
             });
-            Object.setPrototypeOf(clone, Object.getPrototypeOf(value));
-            if (isICellData(value)) {
-                return createCellData(clone) as T;
-            }
             return clone as T;
         }
 
@@ -489,7 +509,7 @@ export class Tools {
         if (this.isObject(value)) {
             Object.keys(value).forEach((key) => {
                 const item = value[key];
-                if (item == null) {
+                if (item == null && key !== 'v') {
                     delete value[key];
                 } else {
                     Tools.removeNull(item);
@@ -700,7 +720,3 @@ export class Tools {
         }
     }
 }
-function isCellData<T extends {}>(value: T) {
-    throw new Error('Function not implemented.');
-}
-

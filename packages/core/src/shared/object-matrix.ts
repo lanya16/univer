@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createCellData, type ICellData, type IDataFrame, isICellData } from '../types/interfaces';
+import { createCellData, ICellData, type IDataFrame, isICellData } from '../types/interfaces';
 import type { IRange } from '../types/interfaces/i-range';
 import { Tools } from './tools';
 import type { Nullable } from './types';
@@ -244,7 +244,7 @@ export class ObjectMatrix<T> {
             const row: IObjectArrayPrimitiveType<T> = {};
             for (let j = 0; j < idf.shape[1]; j++) {
                 const value = idf.iat(i, j);
-                row[j] = createCellData({ v: value, df: idf, r: i, c: j }) as T;
+                row[j] = new ICellData({ df: idf, r: i, c: j, v: value }) as T;
             }
             matrix[i] = row;
         }
@@ -380,7 +380,7 @@ export class ObjectMatrix<T> {
         if (isICellData(value)) {
             const cell = objectArray[column] as ICellData;
             if (cell === undefined) {
-                (objectArray[column] as ICellData) = createCellData(value);
+                (objectArray[column] as ICellData) = new ICellData(value);
             } else {
                 if (value.v !== undefined) {
                     cell.v = value.v;
