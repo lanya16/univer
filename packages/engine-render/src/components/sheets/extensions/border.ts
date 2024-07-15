@@ -101,6 +101,9 @@ export class Border extends SheetExtension {
             // }
 
             for (const key in borderCaches) {
+                if (borderCaches[key] === undefined) {
+                    continue;
+                }
                 const { type, style, color } = borderCaches[key] as BorderCacheItem;
 
                 if (style === BorderStyleTypes.NONE) {

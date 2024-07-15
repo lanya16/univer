@@ -16,7 +16,6 @@
 
 import { customAlphabet, nanoid } from 'nanoid';
 
-import { createCellData, isICellData } from '../types/interfaces';
 import type { Class, IKeyValue } from './types';
 
 const rmsPrefix = /^-ms-/;
@@ -311,6 +310,10 @@ export class Tools {
         return diffValue(one, tow);
     }
 
+    static isDataFrame(value?: any): boolean {
+        return value && value.constructor && value.constructor.name.includes('DataFrame');
+    }
+
     static deepClone<T = unknown>(value: T): T {
         if (!this.isDefine(value)) {
             return value;
@@ -330,19 +333,22 @@ export class Tools {
             return clone as T;
         }
         if (this.isObject(value)) {
-            // const clone: IKeyValue = {};
-            // // Object.keys(value as IKeyValue).forEach((key) => {
-            // //     const item = (value as IKeyValue)[key];
-            // //     clone[key] = Tools.deepClone(item);
-            // // });
-            // // Object.setPrototypeOf(clone, Object.getPrototypeOf(value));
-            // // return clone as T;
+           // const clone: IKeyValue = {};
+           // Object.keys(value as IKeyValue).forEach((key) => {
+           //      const item = (value as IKeyValue)[key];
+           //      clone[key] = Tools.deepClone(item);
+           // });
+           // Object.setPrototypeOf(clone, Object.getPrototypeOf(value));
+           // return clone as T;
 
             const clone = Object.create(Object.getPrototypeOf(value));
 
             Object.getOwnPropertyNames(value).forEach((key) => {
                 const descriptor = Object.getOwnPropertyDescriptor(value, key);
-                if (descriptor) {
+                if (this.isDataFrame(descriptor.value)) {
+			//descriptor.value = descriptor.value;
+
+                } else if (descriptor) {
                     if (typeof descriptor.value === 'object' && descriptor.value !== null) {
                         descriptor.value = Tools.deepClone(descriptor.value);
                     }

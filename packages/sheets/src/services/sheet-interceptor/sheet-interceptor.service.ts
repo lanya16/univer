@@ -74,9 +74,9 @@ export class SheetInterceptorService extends Disposable {
             priority: -1,
             handler(value, context): Nullable<ICellData> {
                 const rawData = context.worksheet.getCellRaw(context.row, context.col);
-                if (value) {
-                    return { ...rawData, ...value };
-                }
+                //if (value) {
+                //    return new ICellData({ ...rawData, ...value });
+               // }
 
                 return rawData;
             },

@@ -109,9 +109,16 @@ if (args.watch) {
     const { port } = await ctx.serve({
         servedir: './local',
         port: 3002,
+        onRequest: (args) => {
+//          if (args.method === 'GET') {
+            args.headers['Access-Control-Allow-Origin'] = '*';
+            args.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, HEAD';
+//              args.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
+//          }
+        },
     });
 
-    const url = `http://localhost:${port}`;
+    const url = `http://0.0.0.0:${port}`;
 
     // eslint-disable-next-line no-console
     console.log(`Local server: ${url}`);

@@ -29,29 +29,23 @@ export type CellValue = string | number | boolean;
 
 // 避免使用 "use strict";
 function proxyDecorator(target: any, propertyKey: string) {
-    let value = target[propertyKey];
-    const getter = () => {
-        if (target.df != null && target.r != null && target.c != null) {
-            return target.df.iat(target.r, target.c);
-        }
-        return value;
-    };
-
-    const setter = (newValue: any) => {
-        if (target.df != null && target.r != null && target.c != null) {
-            return target.df.setcellvalue(target.r, target.c, newValue);
-        }
-        value = newValue;
-    };
-
+    const privatePropKey = `_${propertyKey}`;
     Object.defineProperty(target, propertyKey, {
-        get: getter,
-        set: setter,
+        get() {
+            if (this.df != null && this.r != null && this.c != null) {
+                return this.df.iat(this.r, this.c);
+            }
+            return this[privatePropKey];
+        },
+        set(newValue: any) {
+            if (this.df != null && this.r != null && this.c != null && this.df.iat(this.r, this.c) !== newValue) {
+                return this.df.setcellvalue(this.r, this.c, newValue);
+            }
+            this[privatePropKey] = newValue;
+        },
         enumerable: true,
         configurable: true,
     });
-
-    return Object.getOwnPropertyDescriptor(target, propertyKey);
 }
 
 /**
@@ -162,9 +156,13 @@ export function isNullCell(cell: Nullable<ICellData>) {
         return true;
     }
 
-    const { v, f, si, p, s, custom } = cell;
+    const { f, si, p, s, custom, _v } = cell;
 
-    if (!(v == null || (typeof v === 'string' && v.length === 0))) {
+    if ((cell.v !== null && cell.v !== undefined) || (typeof cell.v === 'string' && cell.v.length > 0)) {
+        return false;
+    }
+
+    if ((_v != null) || (typeof _v === 'string' && _v.length > 0)) {
         return false;
     }
 

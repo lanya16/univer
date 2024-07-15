@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createCellData, ICellData, type IDataFrame, isICellData } from '../types/interfaces';
+import { ICellData, type IDataFrame, isICellData } from '../types/interfaces';
 import type { IRange } from '../types/interfaces/i-range';
 import { Tools } from './tools';
 import type { Nullable } from './types';
@@ -240,6 +240,7 @@ export class ObjectMatrix<T> {
     // 将 DataFrame 转换为 IObjectMatrixPrimitiveType<ICellData>
     dataFrameToMatrix<T>(idf: IDataFrame): IObjectMatrixPrimitiveType<T> {
         const matrix: IObjectMatrixPrimitiveType<T> = {};
+	//console.time('dataframe to matrix');
         for (let i = 0; i < idf.shape[0]; i++) {
             const row: IObjectArrayPrimitiveType<T> = {};
             for (let j = 0; j < idf.shape[1]; j++) {
@@ -248,6 +249,7 @@ export class ObjectMatrix<T> {
             }
             matrix[i] = row;
         }
+	//console.timeEnd('dataframe to matrix');
 
         return matrix;
     }
@@ -377,6 +379,9 @@ export class ObjectMatrix<T> {
     //eg: getFontCreateConfig;
     setValue(row: number, column: number, value: T): void {
         const objectArray = this.getRowOrCreate(row);
+        //if (Object.keys(objectArray).length === 0) {
+	//    return;
+//	}
         if (isICellData(value)) {
             const cell = objectArray[column] as ICellData;
             if (cell === undefined) {

@@ -105,6 +105,8 @@ export class Range {
 
     private _worksheet: Worksheet;
 
+    private _matrix: ObjectMatrix<Nullable<ICellData>>;
+
     constructor(
         workSheet: Worksheet,
         range: IRange,
@@ -112,6 +114,8 @@ export class Range {
     ) {
         this._range = range;
         this._worksheet = workSheet;
+        this._matrix = new ObjectMatrix<Nullable<ICellData>>();
+        this.getMatrix();
     }
 
     static foreach(range: IRange, action: (row: number, column: number) => void): void {
@@ -188,12 +192,11 @@ export class Range {
     getValues(): Array<Array<Nullable<ICellData>>> {
         const { startRow, endRow, startColumn, endColumn } = this._range;
         const range: Array<Array<Nullable<ICellData>>> = [];
-
         for (let r = startRow; r <= endRow; r++) {
             const row: Array<Nullable<ICellData>> = [];
 
             for (let c = startColumn; c <= endColumn; c++) {
-                row.push(this.getMatrix().getValue(r, c) || null);
+                row.push(this._matrix.getValue(r, c) || null);
             }
 
             range.push(row);
@@ -210,15 +213,15 @@ export class Range {
         const { startRow, endRow, startColumn, endColumn } = this._range;
 
         const sheetMatrix = this._worksheet.getCellMatrix();
-        const rangeMatrix = new ObjectMatrix<Nullable<ICellData>>();
+        //this._matrix = new ObjectMatrix<Nullable<ICellData>>();
 
         for (let r = startRow; r <= endRow; r++) {
             for (let c = startColumn; c <= endColumn; c++) {
-                rangeMatrix.setValue(r, c, sheetMatrix.getValue(r, c) || null);
+                this._matrix.setValue(r, c, sheetMatrix.getValue(r, c) || null);
             }
         }
 
-        return rangeMatrix;
+        return this._matrix;
     }
 
     /**
@@ -331,8 +334,8 @@ export class Range {
         const { startRow, endRow, startColumn, endColumn } = this._range;
 
         // get object values from sheet matrix, or use this.getMatrix() create a new matrix then this.getMatrix().getData()
-        const values = this._worksheet.getCellMatrix().getFragment(startRow, endRow, startColumn, endColumn).getData();
-
+        //const values = this._worksheet.getCellMatrix().getFragment(startRow, endRow, startColumn, endColumn).getData();
+        const values = this._matrix.getData();
         if (options.isIncludeStyle) {
             const style = this._deps.getStyles();
             for (let r = 0; r <= endRow - startRow; r++) {

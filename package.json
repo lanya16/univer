@@ -83,4 +83,5 @@
     "lint-staged": {
         "*": "eslint --fix"
     }
+
 }

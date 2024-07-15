@@ -54,13 +54,15 @@ export class Worksheet {
 
         this._sheetId = this._snapshot.id ?? Tools.generateRandomId(6);
         this._cellData = new ObjectMatrix<ICellData>(cellData);
-
-        this._readCSVWithCallback('https://raw.githubusercontent.com/curran/data/gh-pages/jsLibraries/jsLibs.csv',
-            'options', (df: IDataFrame) => {
-                this._setDataFrame(df);
-            });
+        if (this._snapshot.name === '工作表1') {
+        //this._readCSVWithCallback('https://raw.githubusercontent.com/curran/data/gh-pages/jsLibraries/jsLibs.csv',
+            this._readCSVWithCallback('https://pms.c2m-mom.com:8443/bom_2w.csv',
+                { download: true, header: true, downloadRequestHeaders: { 'Access-Control-Allow-Origin': '*' } }, (df: IDataFrame) => {
+                    this._setDataFrame(df);
+                });
 
         // This view model will immediately injected with hooks from SheetViewModel service as Worksheet is constructed.
+        }
         this._viewModel = new SheetViewModel((row, col) => this.getCellRaw(row, col));
         this._rowManager = new RowManager(this._snapshot, this._viewModel, rowData);
         this._columnManager = new ColumnManager(this._snapshot, columnData);
@@ -72,10 +74,10 @@ export class Worksheet {
 
     private _readCSVWithCallback(
         file: any,
-        options: string | undefined,
+        options: any | undefined,
         callback: (dataFrame: IDataFrame) => void
     ) {
-        readCSV(file)
+        readCSV(file, options)
             .then((df) => {
                 callback(df);
             })

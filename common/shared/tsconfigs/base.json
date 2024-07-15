@@ -4,7 +4,7 @@
         "target": "ESNext",
         "jsx": "react",
         "lib": ["ESNext", "DOM", "DOM.Iterable", "WebWorker"],
-        "useDefineForClassFields": true,
+        "useDefineForClassFields": false,
 
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
@@ -15,7 +15,7 @@
         "resolveJsonModule": true,
         "allowImportingTsExtensions": true,
 
-        "strict": false,
+        "strict": true,
         "strictPropertyInitialization": false,
         "noFallthroughCasesInSwitch": true,
         "noEmit": true,
